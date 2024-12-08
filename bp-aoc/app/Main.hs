@@ -8,7 +8,6 @@ main = do
 
 pairs xs = zip xs (tail xs)
 -- returns 1 if the row is successful
-check :: [String] -> Integer
 check xs  
       | any bigJump diffs = 0
       | any noDirection diffs = 0

@@ -1,32 +1,24 @@
 module Main (main) where
 import Data.List
-import qualified Data.Map as M
 
 main :: IO ()
 main = do 
-        contents <- readFile "../day_1.txt" 
-        print . similarity . transform . words $ contents
+        contents <- readFile "../day_2.txt" 
+        print . safetyReport . lines $ contents
 
-bifurcate (x, index) acc | even index = ((read x::Integer) : (fst acc), (snd acc))
-                         | not $ even index = ((fst acc), (read x::Integer) :(snd acc))
-        
+pairs xs = zip xs (tail xs)
+-- returns 1 if the row is successful
+check :: [String] -> Integer
+check xs  
+      | any bigJump diffs = 0
+      | any noDirection diffs = 0
+      | any differentDirection diffs = 0 
+      | otherwise = 1
+      where diffs = map (\(x,y) -> (read x::Integer) - (read y::Integer)) (pairs xs)
+            differentDirection = (\x -> ((head diffs) > 0) /= (x>0))
+            noDirection = (\x -> (x == 0))
+            bigJump = (\x -> (abs x) > 3)
+     
+
+safetyReport xs =  foldr (+) 0 $ (map (\x -> check (words x)) xs)
    
-
-transform xs =
-    foldr bifurcate ([],[]) (zip xs [0..])
-    
-calculateDistance (xs, ys) =
-    foldr (+) 0 $ map (\(x,y) -> abs (x - y)) $ zip (sort xs) (sort ys)
-
-similarity (xs, ys) = 
-    let simMap = foldr addToSimilarityMap M.empty ys
-    in foldr (+) 0 $ map (lookupSimilarity simMap) xs
-
-
-addToSimilarityMap k = 
-  M.insertWith (+) k 1
-
-
-lookupSimilarity dict k  
-  | M.member k dict= k * dict M.! k
-  | M.notMember k dict = 0
